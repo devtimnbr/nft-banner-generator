@@ -83,7 +83,7 @@ const Editor: Component<Props> = ({ onPresetClick, alignment, properties, setAli
                         <div class="flex flex-col gap-y-1">
                             <p class="text-sm">Horizontal</p>
                             <div class="flex flex-row justify-between p-3">
-                                <button class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive('justify-start')} active:bg-red-300`} classList={{ active: 'twitter' === 'twitter'}}  onClick={() => setAlignment('justify-start')}>
+                                <button class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive('justify-start')} active:bg-red-300`}  onClick={() => setAlignment('justify-start')}>
                                     <AlignLeft />
                                 </button>
                                 <button class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive('justify-center')}`} onClick={() => setAlignment('justify-center')} >
@@ -128,7 +128,7 @@ const Editor: Component<Props> = ({ onPresetClick, alignment, properties, setAli
                         <p class="text-sm">Templates</p>
                         <div class="flex flex-row gap-2 flex-wrap w-66 text-warm-gray-900" style={{ flex: '1 1 50%' }}>
 
-                            <button name="twitter" class={`w-32 flex items-center gap-x-2 py-2 px-1 bg-gray-200 rounded-md justify-center hover:bg-twitter hover:text-gray-50 ${isPresetActive('twitter')}`} onClick={onPresetClick}>
+                            <button name="twitter" class={`w-32 flex items-center gap-x-2 py-2 px-1 bg-gray-200 rounded-md justify-center hover:bg-twitter hover:text-gray-50 ${isPresetActive('twitter')}`} classList={{ active: 'twitter' === 'twitter', selected: true}} onClick={onPresetClick}>
                                 <Twitter />
                                 Twitter
                             </button>

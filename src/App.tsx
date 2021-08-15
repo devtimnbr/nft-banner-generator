@@ -138,6 +138,15 @@ const App: Component = () => {
 
   createEffect(() => {
     console.log('IMAGES: ', images())
+
+/*     var canvas: any = document.getElementById("tools_sketch");
+    var ctx = canvas.getContext("2d");
+
+    var image = new Image();
+    image.onload = function() {
+      ctx.drawImage(image, 0, 0);
+    };
+ */
   })
 
   const onDragHandler = (e) => {
@@ -146,7 +155,7 @@ const App: Component = () => {
   }
 
   return (
-    <div class="bg-warm-gray-50 px-4">
+    <div class="px-4 bg-warm-gray-100 min-h-screen">
       <div class="container mx-auto py-32 flex justify-center flex-col gap-y-12">
         <header class="text-center">
           <h1 class="text-6xl text-indigo-600 font-bold">NFT Banner Generator</h1>
@@ -158,7 +167,8 @@ const App: Component = () => {
               <For each={images()}>
                 {(image) => (
                   <div class="group relative">
-                    <img src={image.blob} class="object-scale-down transform rotate-0 hover:cursor-pointer" style={{ height: `${properties().height}px` }} />
+                    <img id="testImg" />
+                    <img src={`${image.blob}`} class="object-scale-down transform rotate-0 hover:cursor-pointer" style={{ height: `${properties().height}px` }} />
                     {/*         <button class="absolute bg-white py-6 px-4 top-2 right-2" style={{ height: 'min-content'}} onClick={() => deleteHandler(image)}>
           Delete
         </button> */}
