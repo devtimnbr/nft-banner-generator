@@ -27,22 +27,22 @@ const Editor: Component<Props> = ({ onPresetClick, alignment, properties, setAli
         }
     })
 
-    const isPresetActive = (presetName: string) => {
-        if (activePreset() === presetName) {
-
-            return `bg-${presetName} text-warm-gray-50`
-        }
-    }
+    const isPresetActive = (presetName: string) => activePreset() === presetName && `bg-${presetName} text-warm-gray-50`;
 
     createEffect(() => {
         console.log(activePreset())
         console.log(images())
     })
 
+    const testChange = (e) => {
+        console.log(e.target.value)
+        
+    }
+
     const activeStyles = 'bg-indigo-600 text-white'
     const isActive = (alignmentCheck: string) => alignment() === alignmentCheck && activeStyles;
     return (
-        <div class="mt-2 flex gap-x-2 justify-center">
+        <div class="mt-4 flex gap-x-2 justify-center">
             <div class="border-1 border-solid border-warm-gray-400 bg-warm-gray-100 rounded-md p-4 flex flex-col gap-y-2 font-semibold">
 
                 <p class="text-lg">Basics</p>
@@ -51,14 +51,17 @@ const Editor: Component<Props> = ({ onPresetClick, alignment, properties, setAli
                     <div class="flex gap-y-2 flex-col">
                         <div class="flex flex-col gap-y-1">
                             <p class="text-sm">Background Color</p>
+                            <div class="flex hover:cursor-pointer">
+                            <input type="color" name="backgroundColor" value={properties().backgroundColor} onInput={onDimensionChange} class="h-auto" />
                             <input type="text" name="backgroundColor" class="p-3" value={properties().backgroundColor} onInput={onDimensionChange} />
+                            </div>
                         </div>
                         {/*                         <div class="flex flex-col gap-y-1">
                             <p class="text-sm">Height</p>
                             <input type="number" name="height" class="p-3" placeholder="Width" value={properties().height} onInput={onDimensionChange} />
                         </div>
  */}                     <div class="flex flex-col gap-y-1">
-                            <p class="text-sm">Background Color</p>
+                            {/* <p class="text-sm">Background Color</p> */}
                             <For each={images()}>
                                 {(image: any) => <p>{image.name}</p>}
                             </For>
@@ -80,7 +83,7 @@ const Editor: Component<Props> = ({ onPresetClick, alignment, properties, setAli
                         <div class="flex flex-col gap-y-1">
                             <p class="text-sm">Horizontal</p>
                             <div class="flex flex-row justify-between p-3">
-                                <button class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive('justify-start')}`} onClick={() => setAlignment('justify-start')}>
+                                <button class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive('justify-start')} active:bg-red-300`} classList={{ active: 'twitter' === 'twitter'}}  onClick={() => setAlignment('justify-start')}>
                                     <AlignLeft />
                                 </button>
                                 <button class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive('justify-center')}`} onClick={() => setAlignment('justify-center')} >

@@ -33,7 +33,7 @@ const App: Component = () => {
   })
   const [colorPalette, setColorPalette] = createSignal([])
   const [images, setImages] = createSignal([])
-  const [edit, setEdit] = createSignal(true)
+  const [edit, setEdit] = createSignal(false)
 
   createEffect(() => {
 
@@ -90,13 +90,6 @@ const App: Component = () => {
               blob: base64
             }])
           }
-          /* 
-                    console.log(blob)
-                    setImages([...images(), {
-                      name: file.name,
-                      blob
-                    }]) */
-
         }
       }
     } else {
@@ -121,10 +114,16 @@ const App: Component = () => {
 
   const download = () => {
     try {
-      const canvas: any = document.getElementById("preview");
+      const node: any = document.getElementById("preview");
+      const dupNode = node.cloneNode(true)
+      console.log({ dupNode, node })
+      document.write(dupNode)
 
-      toJpeg(canvas, { cacheBust: true, })
+      node.inserBefore()
+
+      toJpeg(node, { cacheBust: true, })
         .then((dataUrl) => {
+          console.log({ dataUrl })
           const link = document.createElement('a')
           link.download = 'my-image-name.png'
           link.href = dataUrl
@@ -143,20 +142,25 @@ const App: Component = () => {
     console.log('IMAGES: ', images())
   })
 
+  const onDragHandler = (e) => {
+    console.log('ON DROG', e)
+    setEdit(false)
+  }
+
   return (
-    <div class="bg-warm-gray-50 ">
+    <div class="bg-warm-gray-50 px-4">
       <div class="container mx-auto py-32 flex justify-center flex-col gap-y-12">
         <header class="text-center">
           <h1 class="text-6xl text-indigo-600 font-bold">NFT Banner Generator</h1>
-          <p class="mt-4 w-256 text-warm-gray-900 text-lg font-semibold mx-auto h">Create your own twitter banner. Occaecat deserunt laborum ex adipisicing magna voluptate laborum laboris et est. Occaecat deserunt laborum ex adipisicing magna voluptate laborum laboris et est.</p>
+          <p class="mt-4 text-warm-gray-900 text-lg font-semibold mx-auto h lg:w-3/5">Create your own twitter banner. Occaecat deserunt laborum ex adipisicing magna voluptate laborum laboris et est. Occaecat deserunt laborum ex adipisicing magna voluptate laborum laboris et est.</p>
         </header>
-        <Show when={edit()} fallback={<DropZone dragOverHandler={dragOverHandler} dropHandler={dropHandler} />} >
+        <Show when={edit()} fallback={<DropZone dragOverHandler={dragOverHandler} dropHandler={dropHandler} images={images} />} >
           <section class="mx-auto">
-            <div id="preview" class={`flex rounded-md shadow-lg ${alignment()} gap-x-16`} style={{ width: `${properties().width}px`, height: `${properties().height}px`, "background-color": properties().backgroundColor, 'max-width': '1400px' }}>
+            <div id="preview" onDragOver={onDragHandler} class={`flex mx-auto rounded-md shadow-lg ${alignment()} gap-x-16`} style={{ width: `${properties().width}px`, height: `${properties().height}px`, "background-color": properties().backgroundColor, 'max-width': '1400px' }}>
               <For each={images()}>
                 {(image) => (
                   <div class="group relative">
-                    <img src={image.blob} class="object-scale-down transform rotate-0 group-hover:border-green-600 hover:border-2 hover:cursor-pointer" style={{ height: `${properties().height}px` }} />
+                    <img src={image.blob} class="object-scale-down transform rotate-0 hover:cursor-pointer" style={{ height: `${properties().height}px` }} />
                     {/*         <button class="absolute bg-white py-6 px-4 top-2 right-2" style={{ height: 'min-content'}} onClick={() => deleteHandler(image)}>
           Delete
         </button> */}
@@ -177,6 +181,7 @@ const App: Component = () => {
               presets={presets}
               images={images}
               download={download}
+              
             />
           </section>
           {/* <section>
