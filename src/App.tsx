@@ -117,9 +117,7 @@ const App: Component = () => {
       const node: any = document.getElementById("preview");
       const dupNode = node.cloneNode(true)
       console.log({ dupNode, node })
-      document.write(dupNode)
-
-      node.inserBefore()
+      
 
       toJpeg(node, { cacheBust: true, })
         .then((dataUrl) => {
