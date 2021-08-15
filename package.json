@@ -1,0 +1,22 @@
+{
+  "name": "vite-template-solid",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^2.4.4",
+    "vite-plugin-solid": "^2.0.1",
+    "vite-plugin-windicss": "^1.2.7",
+    "vite-svg-loader": "^2.1.1"
+  },
+  "dependencies": {
+    "colorthief": "^2.3.2",
+    "html-to-image": "^1.7.0",
+    "solid-js": "^1.0.7"
+  }
+}
