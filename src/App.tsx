@@ -1,4 +1,4 @@
-import { Component, createEffect, createSignal, For, Show } from 'solid-js';
+import { Component, createEffect, createSignal, For, Show, onCleanup, onMount } from 'solid-js';
 import DropZone from './components/DropZone';
 import ColorThief from 'colorthief';
 import Editor from './components/Editor';
@@ -23,8 +23,14 @@ const presets = {
   },
 };
 
+export const clickOutside = (el, accessor) => {
+  const onClick = (e) => !el.contains(e.target) && accessor()?.();
+  document.body.addEventListener('click', onClick);
+  onCleanup(() => document.body.removeEventListener('click', onClick));
+};
+
 const App: Component = () => {
-  const [alignment, setAlignment] = createSignal('justify-center');
+  const [alignment, setAlignment] = createSignal(['justify-center', 'items-end']);
   const [properties, setProperties] = createSignal<{
     width: number;
     height: number;
@@ -84,33 +90,35 @@ const App: Component = () => {
 
     if (e.dataTransfer.items) {
       // Use DataTransferItemList interface to access the file(s)
-      for (var i = 0; i < e.dataTransfer.items.length; i++) {
-        // If dropped items aren't files, reject them
-        if (e.dataTransfer.items[i].kind === 'file') {
-          var file = e.dataTransfer.items[i].getAsFile();
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
+      loadFile(e.dataTransfer.items);
+    }
+  };
 
-          let base64;
-          reader.onloadend = () => {
-            base64 = reader.result;
-            console.log({ base64 });
-            setImages([
-              ...images(),
-              {
-                name: file.name,
-                blob: base64,
-              },
-            ]);
-          };
-        }
-      }
-    } else {
-      // Use DataTransfer interface to access the file(s)
-      for (var i = 0; i < e.dataTransfer.files.length; i++) {
-        console.log('... file[' + i + '].name = ' + e.dataTransfer.files[i].name);
-        console.log('File: ', e.dataTransfer.files[i]);
-      }
+  const loadFile = (fileList) => {
+    console.log('LOAOD FILE', fileList);
+
+    for (var i = 0; i < fileList.length; i++) {
+      const file = fileList[i].kind === 'file' ? fileList[i].getAsFile() : fileList[i];
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+
+      let base64;
+      reader.onloadend = () => {
+        base64 = reader.result;
+        console.log({ base64 });
+        setImages([
+          ...images(),
+          {
+            name: file.name,
+            blob: base64,
+            height: '100%',
+            width: '100%',
+          },
+        ]);
+      };
+      /*       } else {
+        const tmo = DataTransferItemList.add(fileList)
+      } */
     }
   };
 
@@ -120,17 +128,28 @@ const App: Component = () => {
     e.preventDefault();
   }
 
-  const deleteHandler = (imageBlob) => {
-    const tmp = images().filter((el) => el !== imageBlob);
-    setImages(tmp);
+  const deleteHandler = (i) => {
+    // weird but tmp has to be here because of rerender
+    const tmp = images();
+    tmp.splice(i, 1);
+    setActiveImage(-1);
+    setImages((prev) => prev.splice(i, 1));
   };
 
   const download = () => {
     try {
       const node: any = document.getElementById('preview');
       const dupNode = node.cloneNode(true);
-      console.log({ dupNode, node });
 
+      const tmpWidth = node.style.width;
+      const tmpHeight = node.style.height;
+      const tmpMaxWidth = node.style.maxWidth;
+
+      node.style.width = properties().width + 'px';
+      node.style.maxWidth = properties().width + 'px';
+      node.style.height = properties().height + 'px';
+
+      console.log({ dupNode, node });
       toJpeg(node, { cacheBust: true })
         .then((dataUrl) => {
           console.log({ dataUrl });
@@ -141,6 +160,11 @@ const App: Component = () => {
         })
         .catch((err) => {
           console.log(err);
+        })
+        .finally(() => {
+          node.style.width = tmpWidth;
+          node.style.maxWidth = tmpMaxWidth;
+          node.style.height = tmpHeight;
         });
     } catch (error) {
       console.log(error);
@@ -149,6 +173,24 @@ const App: Component = () => {
 
   const onDragHandler = () => {
     setEdit(false);
+  };
+
+  const activeImageStyles = 'border-2 border-gray-200';
+  const isSelectedImage = (i) => {
+    return activeImage() === i ? activeImageStyles : '';
+  };
+
+  const onRangeInputHandler = (e) => {
+    const activeIndex = activeImage();
+
+    console.log(images()[activeImage()].height);
+    const mapTest = images().map((el, i) => {
+      if (i === activeImage()) {
+        return { ...el, [e.target.id]: e.target.value };
+      }
+      return { ...el };
+    });
+    setImages(mapTest);
   };
 
   return (
@@ -165,34 +207,47 @@ const App: Component = () => {
         <Show
           when={edit()}
           fallback={
-            <DropZone dragOverHandler={dragOverHandler} dropHandler={dropHandler} images={images} />
+            <DropZone
+              dragOverHandler={dragOverHandler}
+              dropHandler={dropHandler}
+              images={images}
+              loadFile={loadFile}
+            />
           }
         >
-          <section class='mx-auto'>
+          <section class='mx-auto w-full'>
             <div
               id='preview'
               onDragOver={onDragHandler}
-              class={`flex mx-auto rounded-md shadow-lg ${alignment()} gap-x-16`}
+              class={`flex mx-auto rounded-md shadow-lg ${alignment()[0]} ${
+                alignment()[1]
+              } gap-x-16`}
               style={{
                 width: `${properties().width}px`,
                 height: `${properties().height}px`,
                 'background-color': properties().backgroundColor,
-                'max-width': '1400px',
+                'max-width': '100%',
               }}
             >
               <For each={images()}>
                 {(image, index) => (
-                  <div class='group relative'>
-                    <img id='testImg' />
+                  <div
+                    class={`group relative hover:border-2 hover:border-gray-200 ${isSelectedImage(
+                      index()
+                    )}`}
+                    onClick={() => setActiveImage(index())}
+                    style={{ height: `${image.height}%` }}
+                    use:clickOutside={() => setActiveImage(-1)}
+                  >
                     <img
                       src={`${image.blob}`}
-                      class='object-scale-down transform rotate-0 hover:cursor-pointer'
-                      style={{ height: `${properties().height}px` }}
+                      class='object-scale-down h-full transform rotate-0 hover:cursor-pointer'
+                      style={{ 'max-height': properties().height + 'px' }}
                     />
                     <button
                       class='top-2 right-2 hidden group-hover:block absolute text-white transform hover:scale-125'
                       style={{ height: 'min-content' }}
-                      onClick={() => deleteHandler(image)}
+                      onClick={() => deleteHandler(index())}
                     >
                       <svg
                         class='w-6 h-6'
@@ -223,6 +278,8 @@ const App: Component = () => {
               presets={presets}
               images={images}
               download={download}
+              onRangeInputHandler={onRangeInputHandler}
+              activeImage={activeImage}
             />
           </section>
         </Show>

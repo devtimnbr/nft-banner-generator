@@ -18,6 +18,8 @@ interface Props {
   presets: any;
   images: any;
   download: any;
+  onRangeInputHandler: any;
+  activeImage: any;
 }
 
 /* const Button: Component<{ active: boolean }> = ({ active }: any) => {
@@ -33,6 +35,8 @@ const Editor: Component<Props> = ({
   onDimensionChange,
   presets,
   download,
+  onRangeInputHandler,
+  activeImage,
 }: Props) => {
   const [activePreset, setActivePreset] = createSignal('');
 
@@ -47,25 +51,77 @@ const Editor: Component<Props> = ({
   });
 
   const onPresetClickHandler = (e) => {
-    /* console.log(e) */
     e.preventDefault();
-    setActivePreset(e.target.id);
-    onPresetClick(e.target.id);
+    setActivePreset(e.currentTarget.id);
+    onPresetClick(e.currentTarget.id);
+  };
 
-    console.log(e.target.id);
+  const horizontal = ['justify-start', 'justify-center', 'justify-end'];
+  const vertical = ['items-start', 'items-center', 'items-end'];
+  const onAnlignmentChange = (e) => {
+    const { id } = e.currentTarget;
+    let tmp = [...alignment()];
+    if (horizontal.indexOf(id) > -1) {
+      tmp[0] = id;
+    } else if (vertical.indexOf(id) > -1) {
+      tmp[1] = id;
+    }
+    setAlignment(tmp);
   };
 
   const activeStyles = 'bg-indigo-600 text-white';
   const disabledStyles = `bg-warm-gray-200 text-black`;
-  const isActive = (alignmentCheck: string) => alignment() === alignmentCheck && activeStyles;
+  const isActive = (alignmentCheck: string) =>
+    alignment().indexOf(alignmentCheck) > -1 && activeStyles;
   const isPresetActive = (presetName: string) =>
     activePreset() === presetName ? activeStyles : disabledStyles;
 
-  const isActiveTest = (alignmentCheck: string) =>
-    activePreset() === alignmentCheck ? activeStyles : disabledStyles;
+  createEffect(() => console.log('alignment: ', alignment()));
+
+  const isDisbaled = () =>
+    activeImage() < 0 ? 'text-gray-300 border-warn-gray-300' : 'border-warm-gray-400';
 
   return (
-    <div class='mt-4 flex gap-x-2 justify-center'>
+    <div class='mt-4 flex gap-x-2 gap-y-4 justify-center flex-wrap'>
+      <div
+        id='image-details'
+        class={`border-1 border-solid bg-warm-gray-100 rounded-md p-4 flex flex-col gap-y-2 font-semibold ${isDisbaled()}`}
+      >
+        <p class='text-lg'>Image Details</p>
+        <div class='flex flex-row gap-x-6'>
+          <div class='flex gap-y-2 flex-col'>
+            <div class='flex flex-col gap-y-1'>
+              <p class='text-sm'>Height</p>
+              <div class='flex hover:cursor-pointer'>
+                <input
+                  disabled={activeImage() < 0}
+                  id='height'
+                  name='height'
+                  type='range'
+                  class='bg-indigo-600'
+                  min='1'
+                  max='100'
+                  step='1'
+                  value={activeImage() > -1 ? images()[activeImage()].height : '100'}
+                  onInput={onRangeInputHandler}
+                />
+              </div>
+            </div>
+            {/* <div class='flex flex-col gap-y-1'>
+              <For each={images()}>{(image: any) => <p>{image.name}</p>}</For>
+            </div> */}
+            {/*             <div>
+              <button
+                class=' px-4 py-2 bg-indigo-600 rounded-sm font-bold text-gray-50 shadow-sm'
+                onClick={download}
+              >
+                Download
+              </button>
+            </div> */}
+          </div>
+        </div>
+      </div>
+
       <div class='border-1 border-solid border-warm-gray-400 bg-warm-gray-100 rounded-md p-4 flex flex-col gap-y-2 font-semibold'>
         <p class='text-lg'>Basics</p>
         <div class='flex flex-row gap-x-6'>
@@ -112,26 +168,29 @@ const Editor: Component<Props> = ({
               <p class='text-sm'>Horizontal</p>
               <div class='flex flex-row justify-between p-3'>
                 <button
+                  id='justify-start'
                   class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive(
                     'justify-start'
                   )}`}
-                  onClick={() => setAlignment('justify-start')}
+                  onClick={onAnlignmentChange}
                 >
                   <AlignLeft />
                 </button>
                 <button
+                  id='justify-center'
                   class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive(
                     'justify-center'
                   )}`}
-                  onClick={() => setAlignment('justify-center')}
+                  onClick={onAnlignmentChange}
                 >
                   <AlignCenter />
                 </button>
                 <button
+                  id='justify-end'
                   class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive(
                     'justify-end'
                   )}`}
-                  onClick={() => setAlignment('justify-end')}
+                  onClick={onAnlignmentChange}
                 >
                   <AlignRight />
                 </button>
@@ -140,9 +199,33 @@ const Editor: Component<Props> = ({
             <div class='flex flex-col gap-y-1'>
               <p class='text-sm'>Vertical</p>
               <div class='flex flex-row justify-between p-3'>
-                <AlignTop />
-                <AlignMiddle />
-                <AlignBottom />
+                <button
+                  id='items-start'
+                  class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive(
+                    'items-start'
+                  )}`}
+                  onClick={onAnlignmentChange}
+                >
+                  <AlignTop />
+                </button>
+                <button
+                  id='items-center'
+                  class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive(
+                    'items-center'
+                  )}`}
+                  onClick={onAnlignmentChange}
+                >
+                  <AlignMiddle />
+                </button>
+                <button
+                  id='items-end'
+                  class={`p-1 active:bg-indigo-600 rounded-full hover:bg-indigo-600 hover:text-white ${isActive(
+                    'items-end'
+                  )}`}
+                  onClick={onAnlignmentChange}
+                >
+                  <AlignBottom />
+                </button>
               </div>
             </div>
           </div>
