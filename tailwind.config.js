@@ -1,5 +1,6 @@
 module.exports = {
   darkMode: false, // or 'media' or 'class'
+  mode: 'jit',
   theme: {
     extend: {
       colors: {
